@@ -1,7 +1,7 @@
 <file-index>
     <a>
-        <name></name> <!-- file path -->
-        <length>419</length> <!-- in second -->
+        <name></name> <!-- file name in the data folder -->
+        <length></length> <!-- integer in seconds -->
     </a>
     <b>
         <name></name> <!-- if an easy selection is required -->

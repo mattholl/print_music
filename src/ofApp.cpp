@@ -17,7 +17,7 @@ void ofApp::setup(){
     if( XML.loadFile("settings.local.xml") ){
         cout << "settings.xml loaded" << endl;
     } else {
-        cout << "unable to load settings.xml check data/ folder" << endl;
+        cout << "unable to load settings.local.xml check data/ folder" << endl;
     }
     
     string fileIndex = "a";
