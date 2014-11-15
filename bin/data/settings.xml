@@ -1,0 +1,17 @@
+<file-index>
+    <a>
+        <name></name> <!-- file path -->
+        <length>419</length> <!-- in second -->
+    </a>
+    <b>
+        <name></name> <!-- if an easy selection is required -->
+        <length></length>
+    </b>
+</file-index>
+<settings>
+    <decay-rate>0.9</decay-rate>
+    <frequency-scale>100</frequency-scale>
+    <radial-position-start>10</radial-position-start>
+    <radial-position-end>1000</radial-position-end>
+    <line-resolution>1</line-resolution>
+</settings>

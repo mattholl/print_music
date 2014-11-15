@@ -105,3 +105,7 @@ Desktop.ini
 
 .mailmap
 TODO.md
+settings.local.xml
+meshdumps
+screenshots
+bin/data/*.wav
