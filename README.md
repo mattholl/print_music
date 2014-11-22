@@ -12,3 +12,4 @@ A .ply file of the mesh can be dumped by pressing the 'm' key whilst the app is 
 - [ ] Add images to this readme
 - [ ] Add camera controls to readme
 - [ ] Make the mesh watertight ready for printing
+- [ ] Better instructions + web viewer with a simple static server
