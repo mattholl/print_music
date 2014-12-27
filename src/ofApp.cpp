@@ -87,7 +87,12 @@ void ofApp::update(){
     
     // Add a line to the mesh ten times a second
     if (dt >= period) {
-        addRadialToMesh(period);
+        // how much must the angle be increased by to complete one full rotation in fileLength time
+        float angleVelocity = TWO_PI / (float)fileLength * period;  // rads per second
+        currentAngle += angleVelocity;
+        
+        addNextSpectrumToMesh(period);
+        addBaseToMesh(period);
         time0 = time;
     }
 }
@@ -132,11 +137,7 @@ void ofApp::draw(){
 }
 
 //--------------------------------------------------------------
-void ofApp::addRadialToMesh(float period) {
-    
-    // how much must the angle be increased by to complete one full rotation in fileLength time
-    float angleVelocity = TWO_PI / (float)fileLength * period;  // rads per second
-    currentAngle += angleVelocity;
+void ofApp::addNextSpectrumToMesh(float period) {
     
     // Where does the radius start and end
     float radialPosStart = radPostStart; // Values for these are imported from settings.xml file
@@ -226,6 +227,13 @@ void ofApp::addRadialToMesh(float period) {
         }
         
     }
+    
+}
+
+//--------------------------------------------------------------
+void ofApp::addBaseToMesh(float period) {
+    
+    
     
 }
 
