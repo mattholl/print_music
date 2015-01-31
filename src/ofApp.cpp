@@ -214,15 +214,15 @@ void ofApp::addNextSpectrumToMesh(float period) {
             
             ofVec3f newN2 = n2 + nTri2;
             newN2.normalize();
-            mesh.setNormal(i1, newN2);
+            mesh.setNormal(i2, newN2);
             
             ofVec3f newN3 = n3 + nTri2;
             newN3.normalize();
-            mesh.setNormal(i1, newN3);
+            mesh.setNormal(i3, newN3);
             
             ofVec3f newN4 = n4 + nTri1 + nTri2;
             newN4.normalize();
-            mesh.setNormal(i1, newN4);
+            mesh.setNormal(i4, newN4);
             
         }
         
