@@ -56,6 +56,9 @@ class ofApp : public ofBaseApp{
     float currentAngle = 0;         // Accumlated rotation for the current line
     float time0;          // Regularly add a line to the mesh
     
+    // Function which will add vertices and triangles to the mesh
     void addNextSpectrumToMesh(float period);
     void addBaseToMesh(float period);
+    void addCentreToMesh(float period);
+    void addSideToMesh(float period);
 };

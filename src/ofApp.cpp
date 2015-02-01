@@ -93,10 +93,13 @@ void ofApp::update(){
     if (dt >= period) {
         // how much must the angle be increased by to complete one full rotation in fileLength time
         float angleVelocity = TWO_PI / (float)fileLength * period;  // rads per second
-        currentAngle += angleVelocity;
+        currentAngle += angleVelocity;  // Update global value
         
         addNextSpectrumToMesh(period);
         addBaseToMesh(period);
+        addCentreToMesh(period);
+        addSideToMesh(period);
+        
         time0 = time;
     }
 }
@@ -108,7 +111,8 @@ void ofApp::draw(){
     // Draw the mesh
     cam.begin();
     ofEnableDepthTest();
-    mesh.draw();
+//    mesh.draw();
+    mesh.drawWireframe();
     ofSetColor(255,255,255);
     lightAbove.draw();
     lightBelow.draw();
@@ -301,6 +305,49 @@ void ofApp::addBaseToMesh(float period) {
     }
     
 }
+
+
+//--------------------------------------------------------------
+void ofApp::addCentreToMesh(float period) {
+    // For each line get the base vertex and the
+
+    
+}
+
+
+
+//--------------------------------------------------------------
+void ofApp::addSideToMesh(float period) {
+    // Called after the vertices for the spectrum surface and the vertices for the base have been added.
+    // Get the end vertices for each line - again the line just added (total num vertices less num vertices in each spectrum band)
+    // And the end vertices for lines that make up the base
+    // Normals should point away from the centre
+    
+    int numVertices = mesh.getNumVertices();
+    
+    if (numVertices >= (numSpectrumBands * 4)) {
+        
+        // Get the end vertex of the last line of the base
+        int i1 = numVertices - 1;
+
+        // Get the vertex of the next to last line of the base
+        int i2 = numVertices - 1 - (numSpectrumBands * 2);
+        
+        // Get the end vertex index of the last spectrum line
+        int i3 = numVertices - 1 - numSpectrumBands;
+        
+        // And the last vertex index of the spectrum line before the last one
+        int i4 = numVertices - 1 - (numSpectrumBands * 3);
+        
+        // Add triangles to the mesh
+        mesh.addTriangle(i1, i2, i4);
+        mesh.addTriangle(i4, i3, i1);
+   
+    
+    }
+    
+}
+
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
