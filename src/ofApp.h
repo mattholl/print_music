@@ -50,8 +50,8 @@ class ofApp : public ofBaseApp{
     // Mesh setup and rendering
     ofEasyCam cam;
     ofMesh mesh;
-    ofLight light;
-    
+    ofLight lightAbove;
+    ofLight lightBelow;
     
     float currentAngle = 0;         // Accumlated rotation for the current line
     float time0;          // Regularly add a line to the mesh

@@ -50,9 +50,13 @@ void ofApp::setup(){
     cam.setFarClip(20000);
     cam.setDistance(500);
     
-    light.enable();
-    light.setPointLight();
-    light.setPosition(0, 0, 300);
+    lightAbove.enable();
+    lightAbove.setPointLight();
+    lightAbove.setPosition(0, 0, 300);
+    
+    lightBelow.enable();
+    lightBelow.setPointLight();
+    lightBelow.setPosition(0, 0, -300);
     
     time0 = ofGetElapsedTimef();
 }
@@ -106,7 +110,8 @@ void ofApp::draw(){
     ofEnableDepthTest();
     mesh.draw();
     ofSetColor(255,255,255);
-    light.draw();
+    lightAbove.draw();
+    lightBelow.draw();
     
     ofDisableDepthTest();
     cam.end();
@@ -171,19 +176,22 @@ void ofApp::addNextSpectrumToMesh(float period) {
     }
     
     // Weave the new vertices into the existing mesh
-    int numVertices = mesh.getNumVertices(); // 512
+    int numVertices = mesh.getNumVertices();    // At least 256 * 3 (for the line added at the base as well)
     
-    // Ensure there are at least two rows of vertices
+    // Ensure there are at least two rows of vertices for the top surface - there will be one row of vertices inbetween each
+    // surface line of vertices which added for the base
     // As a new spectrum band is generated stitch it into the existing mesh
     // Get the vertex index for the first vertex on each of the two lines the last one and the new one
     // and work along it adding two triangles for each two vertices
-    if (numVertices >= (numSpectrumBands * 2)) {
+    
+    if (numVertices >= (numSpectrumBands * 3)) {
         
         for(int j = 0; j < numSpectrumBands - 1; j++) {
             
             // Vertex indices
-            int i1 = numVertices - (numSpectrumBands * 2) + j;
-            int i2 = numVertices - (numSpectrumBands * 2) + 1 + j;
+            // We want to stitch the last spectrum band added to the spectrum band for the surface two previous
+            int i1 = numVertices - (numSpectrumBands * 3) + j;
+            int i2 = numVertices - (numSpectrumBands * 3) + 1 + j;
             int i3 = numVertices - numSpectrumBands + j;
             int i4 = numVertices - numSpectrumBands + 1 + j;
             
@@ -227,13 +235,70 @@ void ofApp::addNextSpectrumToMesh(float period) {
         }
         
     }
-    
+
 }
 
 //--------------------------------------------------------------
 void ofApp::addBaseToMesh(float period) {
     
+    // Where does the radius start and end
+    float radialPosStart = radPostStart; // Values for these are imported from settings.xml file
+    float radialPosEnd = radPosEnd;
+    float radialPos = radialPosStart; // current radius between start and end
     
+    float pctStep = 1 / (float)(numSpectrumBands);  // percentage interpolated between start and end radial pos
+    float pct = 0.0f;
+    
+    // Add vertices for the base
+    // Follow the same process of zig-zag stitching between the two line but with height 0
+    for (int i = 0; i < numSpectrumBands; i++) {
+        
+        pct = pctStep * i;
+        radialPos = (1 - pct) * radialPosStart + (pct) * radialPosEnd;
+        
+        // set point x and y from currentAngle rotation
+        float x = cos(currentAngle) * radialPos;
+        float y = sin(currentAngle) * radialPos;
+        float z = 0;    //
+        
+        // Add each point to the mesh
+        ofVec3f p(x, y, z);
+        mesh.addVertex(p);
+        mesh.addColor(ofColor::seaGreen);
+        
+        // Add a normal for each added vertex
+        ofVec3f n(0, 0, -1);
+        mesh.addNormal(n);
+    }
+    
+    // Add the triangles ensure to take the last chunk of vertices and don't include the surface ones
+    
+    // Get the last batch of vertices that were added to the mesh
+    // Weave the new vertices into the existing mesh
+    // This will now be at least 512 * 4, another line has been added for the base of the mesh and will be two previous lines for the base
+    int numVertices = mesh.getNumVertices();
+    
+    // Need to start at total vertices - 2 * num spectrum bands and work through to the end
+    
+    if (numVertices >= (numSpectrumBands * 4)) {
+
+        for(int j = 0; j < numSpectrumBands - 1; j++) {
+
+            // Vertex indices
+            int i1 = numVertices - (numSpectrumBands * 3) + j;
+            int i2 = numVertices - (numSpectrumBands * 3) + 1 + j;
+            int i3 = numVertices - numSpectrumBands + j;
+            int i4 = numVertices - numSpectrumBands + 1 + j;
+
+            mesh.addTriangle(i1, i2, i4);
+            mesh.addTriangle(i4, i3, i1);
+            
+            // The normals that are added for the base all point down (z = -1) so there's no need to
+            // add and normalize them for each triangle
+            
+        }
+        
+    }
     
 }
 
