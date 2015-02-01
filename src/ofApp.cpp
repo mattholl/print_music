@@ -48,11 +48,11 @@ void ofApp::setup(){
     }
     
     cam.setFarClip(20000);
-    cam.setDistance(2000);
+    cam.setDistance(500);
     
     lightAbove.enable();
     lightAbove.setPointLight();
-    lightAbove.setPosition(0, 0, 300);
+    lightAbove.setPosition(-50, -50, 300);
     
     lightBelow.enable();
     lightBelow.setPointLight();
@@ -310,7 +310,63 @@ void ofApp::addBaseToMesh(float period) {
 //--------------------------------------------------------------
 void ofApp::addCentreToMesh(float period) {
     // For each line get the base vertex and the
+    // Follow the same logic as adding the side triangles to the mesh
 
+    int numVertices = mesh.getNumVertices();
+    
+    if (numVertices >= (numSpectrumBands * 4)) {
+        
+        // Get first vertex index in the last line
+        int i1 = numVertices - numSpectrumBands;
+        
+        // Get the vertex of the next to last line of the base
+        int i2 = numVertices - (numSpectrumBands * 2);
+        
+        // Get the end vertex index of the last spectrum line
+        int i3 = numVertices - (numSpectrumBands * 3);
+        
+        // And the last vertex index of the spectrum line before the last one
+        int i4 = numVertices - (numSpectrumBands * 4);
+        
+        // Add triangles to the mesh
+        mesh.addTriangle(i1, i2, i4);
+        mesh.addTriangle(i4, i3, i1);
+        
+        // Get the vertices to calulate the normals
+        ofVec3f v1 = mesh.getVertex(i1);
+        ofVec3f v2 = mesh.getVertex(i2);
+        ofVec3f v3 = mesh.getVertex(i3);
+        ofVec3f v4 = mesh.getVertex(i4);
+        
+        // Face normal for the first triangle
+        ofVec3f nTri1 = ( (v2 - v1).crossed( v4 - v1 ) ).normalized();
+        
+        // Face normal for the second triangle
+        ofVec3f nTri2 = ( (v3 - v4).crossed( v1 - v4 ) ).normalized();
+        
+        // Get the corresponding normals for i1-4, accumulate, normalise and reset in the mesh
+        ofVec3f n1 = mesh.getNormal(i1);
+        ofVec3f n2 = mesh.getNormal(i2);
+        ofVec3f n3 = mesh.getNormal(i3);
+        ofVec3f n4 = mesh.getNormal(i4);
+        
+        ofVec3f newN1 = n1 + nTri1 + nTri2;
+        newN1.normalize();
+        mesh.setNormal(i1, newN1);
+        
+        ofVec3f newN2 = n2 + nTri2;
+        newN2.normalize();
+        mesh.setNormal(i2, newN2);
+        
+        ofVec3f newN3 = n3 + nTri2;
+        newN3.normalize();
+        mesh.setNormal(i3, newN3);
+        
+        ofVec3f newN4 = n4 + nTri1 + nTri2;
+        newN4.normalize();
+        mesh.setNormal(i4, newN4);
+        
+    }
     
 }
 
