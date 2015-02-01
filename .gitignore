@@ -110,3 +110,4 @@ meshdumps
 screenshots
 bin/data/*.wav
 bin/data/*.ply
+bin/data/*.png
