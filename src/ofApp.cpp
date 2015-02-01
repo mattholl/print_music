@@ -48,7 +48,7 @@ void ofApp::setup(){
     }
     
     cam.setFarClip(20000);
-    cam.setDistance(500);
+    cam.setDistance(2000);
     
     lightAbove.enable();
     lightAbove.setPointLight();
@@ -56,7 +56,7 @@ void ofApp::setup(){
     
     lightBelow.enable();
     lightBelow.setPointLight();
-    lightBelow.setPosition(0, 0, -300);
+    lightBelow.setPosition(1500, 200, 0);
     
     time0 = ofGetElapsedTimef();
 }
@@ -111,8 +111,8 @@ void ofApp::draw(){
     // Draw the mesh
     cam.begin();
     ofEnableDepthTest();
-//    mesh.draw();
-    mesh.drawWireframe();
+    mesh.draw();
+//    mesh.drawWireframe();
     ofSetColor(255,255,255);
     lightAbove.draw();
     lightBelow.draw();
@@ -342,7 +342,40 @@ void ofApp::addSideToMesh(float period) {
         // Add triangles to the mesh
         mesh.addTriangle(i1, i2, i4);
         mesh.addTriangle(i4, i3, i1);
-   
+        
+        // Get the vertices to calulate the normals
+        ofVec3f v1 = mesh.getVertex(i1);
+        ofVec3f v2 = mesh.getVertex(i2);
+        ofVec3f v3 = mesh.getVertex(i3);
+        ofVec3f v4 = mesh.getVertex(i4);
+        
+        // Face normal for the first triangle
+        ofVec3f nTri1 = ( (v2 - v1).crossed( v4 - v1 ) ).normalized() * -1;
+        
+        // Face normal for the second triangle
+        ofVec3f nTri2 = ( (v3 - v4).crossed( v1 - v4 ) ).normalized() * -1;
+        
+        // Get the corresponding normals for i1-4, accumulate, normalise and reset in the mesh
+        ofVec3f n1 = mesh.getNormal(i1);
+        ofVec3f n2 = mesh.getNormal(i2);
+        ofVec3f n3 = mesh.getNormal(i3);
+        ofVec3f n4 = mesh.getNormal(i4);
+        
+        ofVec3f newN1 = n1 + nTri1 + nTri2;
+        newN1.normalize();
+        mesh.setNormal(i1, newN1);
+        
+        ofVec3f newN2 = n2 + nTri2;
+        newN2.normalize();
+        mesh.setNormal(i2, newN2);
+        
+        ofVec3f newN3 = n3 + nTri2;
+        newN3.normalize();
+        mesh.setNormal(i3, newN3);
+        
+        ofVec3f newN4 = n4 + nTri1 + nTri2;
+        newN4.normalize();
+        mesh.setNormal(i4, newN4);
     
     }
     
