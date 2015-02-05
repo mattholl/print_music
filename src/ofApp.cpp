@@ -444,6 +444,11 @@ void ofApp::addSideToMesh(float period) {
 void ofApp::keyPressed(int key){
     
     
+}
+
+//--------------------------------------------------------------
+void ofApp::keyReleased(int key){
+    
     switch (key) {
             
             // Save an image
@@ -469,7 +474,7 @@ void ofApp::keyPressed(int key){
         case 'm': {
             bFinishMesh = true;
             
-            // Call functions to 
+            // Call functions to
             
             mesh.save("meshdump_" + ofToString(ofGetUnixTime()) + ".ply");
             cout << "Manual mesh dump : meshdump_" + ofToString(ofGetUnixTime()) + ".ply" << endl;
@@ -499,11 +504,6 @@ void ofApp::keyPressed(int key){
             }
             break;
     }
-}
-
-//--------------------------------------------------------------
-void ofApp::keyReleased(int key){
-
 }
 
 //--------------------------------------------------------------
