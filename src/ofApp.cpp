@@ -95,10 +95,12 @@ void ofApp::update(){
         float angleVelocity = TWO_PI / (float)fileLength * period;  // rads per second
         currentAngle += angleVelocity;  // Update global value
         
-        addNextSpectrumToMesh(period);
-        addBaseToMesh(period);
-        addCentreToMesh(period);
-        addSideToMesh(period);
+        if(!bFinishMesh) {
+            addNextSpectrumToMesh(period);
+            addBaseToMesh(period);
+            addCentreToMesh(period);
+            addSideToMesh(period);
+        }
         
         time0 = time;
     }
@@ -465,6 +467,10 @@ void ofApp::keyPressed(int key){
             
             // Export a PLY mesh
         case 'm': {
+            bFinishMesh = true;
+            
+            // Call functions to 
+            
             mesh.save("meshdump_" + ofToString(ofGetUnixTime()) + ".ply");
             cout << "Manual mesh dump : meshdump_" + ofToString(ofGetUnixTime()) + ".ply" << endl;
             break;
