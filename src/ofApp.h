@@ -43,6 +43,11 @@ class ofApp : public ofBaseApp{
     // Runtime info
     bool bShowInfo = true;          // Draw the spectrum and reportstream data or not
     
+    bool bFinishMesh = false;       // Set this tie the last FFT spectrum band into the first,
+                                    // when set to true no more bands will be added to the mesh
+    
+    int surfaceDepth;               // How far below the surface FFT will the base be placed
+    
     //    int bandRad = 2;                // Band index spectrum bass drum
     //    int bandVel = 100;              // Band index in spectrum snare
     
@@ -50,11 +55,16 @@ class ofApp : public ofBaseApp{
     // Mesh setup and rendering
     ofEasyCam cam;
     ofMesh mesh;
-    ofLight light;
-    
+    ofLight lightAbove;
+    ofLight lightBelow;
     
     float currentAngle = 0;         // Accumlated rotation for the current line
     float time0;          // Regularly add a line to the mesh
     
-    void addRadialToMesh(float period);
+    // Function which will add vertices and triangles to the mesh
+    void addNextSpectrumToMesh(float period);
+    void addBaseToMesh(float period);
+    void addCentreToMesh(float period);
+    void addSideToMesh(float period);
+    void connectLastSpectrumToFirst();
 };

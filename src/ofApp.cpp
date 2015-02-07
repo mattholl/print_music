@@ -32,6 +32,7 @@ void ofApp::setup(){
     radPostStart = XML.getValue("settings:radial-position-start", 10);
     radPosEnd = XML.getValue("settings:radial-position-end", 1000);
     lineResolution = XML.getValue("settings:line-resolution", 1);
+    surfaceDepth = XML.getValue("settings:base-surface-depth", -20);
     
     // Set up sound sample
     sound.loadSound(fileName);
@@ -50,9 +51,13 @@ void ofApp::setup(){
     cam.setFarClip(20000);
     cam.setDistance(500);
     
-    light.enable();
-    light.setPointLight();
-    light.setPosition(0, 0, 300);
+    lightAbove.enable();
+    lightAbove.setPointLight();
+    lightAbove.setPosition(-50, -50, 300);
+    
+    lightBelow.enable();
+    lightBelow.setPointLight();
+    lightBelow.setPosition(1500, 200, 0);
     
     time0 = ofGetElapsedTimef();
 }
@@ -87,7 +92,17 @@ void ofApp::update(){
     
     // Add a line to the mesh ten times a second
     if (dt >= period) {
-        addRadialToMesh(period);
+        // how much must the angle be increased by to complete one full rotation in fileLength time
+        float angleVelocity = TWO_PI / (float)fileLength * period;  // rads per second
+        currentAngle += angleVelocity;  // Update global value
+        
+        if(!bFinishMesh) {
+            addNextSpectrumToMesh(period);
+            addBaseToMesh(period);
+            addCentreToMesh(period);
+            addSideToMesh(period);
+        }
+        
         time0 = time;
     }
 }
@@ -100,8 +115,13 @@ void ofApp::draw(){
     cam.begin();
     ofEnableDepthTest();
     mesh.draw();
-    ofSetColor(255,255,255);
-    light.draw();
+//    mesh.drawWireframe();
+
+    if(bShowInfo) {
+        ofSetColor(255,255,255);
+        lightAbove.draw();
+        lightBelow.draw();
+    }
     
     ofDisableDepthTest();
     cam.end();
@@ -132,11 +152,7 @@ void ofApp::draw(){
 }
 
 //--------------------------------------------------------------
-void ofApp::addRadialToMesh(float period) {
-    
-    // how much must the angle be increased by to complete one full rotation in fileLength time
-    float angleVelocity = TWO_PI / (float)fileLength * period;  // rads per second
-    currentAngle += angleVelocity;
+void ofApp::addNextSpectrumToMesh(float period) {
     
     // Where does the radius start and end
     float radialPosStart = radPostStart; // Values for these are imported from settings.xml file
@@ -170,19 +186,22 @@ void ofApp::addRadialToMesh(float period) {
     }
     
     // Weave the new vertices into the existing mesh
-    int numVertices = mesh.getNumVertices(); // 512
+    int numVertices = mesh.getNumVertices();    // At least 256 * 3 (for the line added at the base as well)
     
-    // Ensure there are at least two rows of vertices
+    // Ensure there are at least two rows of vertices for the top surface - there will be one row of vertices inbetween each
+    // surface line of vertices which added for the base
     // As a new spectrum band is generated stitch it into the existing mesh
     // Get the vertex index for the first vertex on each of the two lines the last one and the new one
     // and work along it adding two triangles for each two vertices
-    if (numVertices >= (numSpectrumBands * 2)) {
+    
+    if (numVertices >= (numSpectrumBands * 3)) {
         
         for(int j = 0; j < numSpectrumBands - 1; j++) {
             
             // Vertex indices
-            int i1 = numVertices - (numSpectrumBands * 2) + j;
-            int i2 = numVertices - (numSpectrumBands * 2) + 1 + j;
+            // We want to stitch the last spectrum band added to the spectrum band for the surface two previous
+            int i1 = numVertices - (numSpectrumBands * 3) + j;
+            int i2 = numVertices - (numSpectrumBands * 3) + 1 + j;
             int i3 = numVertices - numSpectrumBands + j;
             int i4 = numVertices - numSpectrumBands + 1 + j;
             
@@ -213,15 +232,190 @@ void ofApp::addRadialToMesh(float period) {
             
             ofVec3f newN2 = n2 + nTri2;
             newN2.normalize();
-            mesh.setNormal(i1, newN2);
+            mesh.setNormal(i2, newN2);
             
             ofVec3f newN3 = n3 + nTri2;
             newN3.normalize();
-            mesh.setNormal(i1, newN3);
+            mesh.setNormal(i3, newN3);
             
             ofVec3f newN4 = n4 + nTri1 + nTri2;
             newN4.normalize();
-            mesh.setNormal(i1, newN4);
+            mesh.setNormal(i4, newN4);
+            
+        }
+        
+    }
+
+}
+
+//--------------------------------------------------------------
+void ofApp::connectLastSpectrumToFirst() {
+    // Get the total number of vertices
+    // numSpectrumBands
+
+    int numVertices = mesh.getNumVertices();
+    
+    
+    for (int i = 0; i < numSpectrumBands - 1; i++) {
+        // Get the indices of each vertex, starting from the centre
+        int lastIdx1 = numVertices - (numSpectrumBands * 2) + i;
+        int lastIdx2 = numVertices - (numSpectrumBands * 2) + 1 + i;
+
+        int firstIdx1 = i;
+        int firstIdx2 = i + 1;
+        
+        mesh.addTriangle(lastIdx1, lastIdx2, firstIdx2);
+        mesh.addTriangle(firstIdx2, firstIdx1, lastIdx1);
+        
+        // Get the vertices to calulate the normals
+        ofVec3f v1 = mesh.getVertex(lastIdx1);
+        ofVec3f v2 = mesh.getVertex(lastIdx2);
+        ofVec3f v3 = mesh.getVertex(firstIdx1);
+        ofVec3f v4 = mesh.getVertex(firstIdx2);
+        
+        // Face normal for the first triangle
+        ofVec3f nTri1 = ( (v2 - v1).crossed( v4 - v1 ) ).normalized();
+        
+        // Face normal for the second triangle
+        ofVec3f nTri2 = ( (v3 - v4).crossed( v1 - v4 ) ).normalized();
+        
+        // Get the corresponding normals for i1-4, accumulate, normalise and reset in the mesh
+        ofVec3f n1 = mesh.getNormal(lastIdx1);
+        ofVec3f n2 = mesh.getNormal(lastIdx2);
+        ofVec3f n3 = mesh.getNormal(firstIdx1);
+        ofVec3f n4 = mesh.getNormal(firstIdx2);
+        
+        ofVec3f newN1 = n1 + nTri1 + nTri2;
+        newN1.normalize();
+        mesh.setNormal(lastIdx1, newN1);
+        
+        ofVec3f newN2 = n2 + nTri2;
+        newN2.normalize();
+        mesh.setNormal(lastIdx2, newN2);
+        
+        ofVec3f newN3 = n3 + nTri2;
+        newN3.normalize();
+        mesh.setNormal(firstIdx1, newN3);
+        
+        ofVec3f newN4 = n4 + nTri1 + nTri2;
+        newN4.normalize();
+        mesh.setNormal(firstIdx2, newN4);
+    }
+
+    // Add the base triangles to the mesh
+    for(int j = 0; j < numSpectrumBands - 1; j++) {
+        
+        // Get the indices of each vertex, starting from the centre
+        int lastBaseIdx1 = numVertices - numSpectrumBands + j;
+        int lastBaseIdx2 = numVertices - numSpectrumBands + 1 + j;
+        
+        int firstBaseIdx1 = numSpectrumBands + j;
+        int firstBaseIdx2 = numSpectrumBands + j + 1;
+        
+        mesh.addTriangle(lastBaseIdx1, lastBaseIdx2, firstBaseIdx2);
+        mesh.addTriangle(firstBaseIdx2, firstBaseIdx1, lastBaseIdx1);
+        
+        // The normals that are added for the base all point down (z = -1) so there's no need to
+        // add and normalize them for each triangle
+        
+    }
+    
+    
+    // Add triangles for the rim vertices
+    
+    // Get the end vertex of the last line of the base
+    int lastBaseOuterIdx = numVertices - 1;
+    
+    // Get the vertex for the end vertex of the first base vertex line
+    int firstBaseOuterIdx = (numSpectrumBands * 2) - 1;
+    
+    // Get the end vertex index of the last spectrum line
+    int lastSpectrumOuterIdx = numVertices - 1 - numSpectrumBands;
+    
+    // And the last vertex index of the spectrum line before the last one
+    int firstSpectrumOuterIdx = numSpectrumBands - 1;
+    
+    // Add triangles to the mesh
+    mesh.addTriangle(lastBaseOuterIdx, firstBaseOuterIdx, firstSpectrumOuterIdx);
+    mesh.addTriangle(firstSpectrumOuterIdx, lastSpectrumOuterIdx, lastBaseOuterIdx);
+    
+    // Add triangles for the inner vertices
+    
+    // Get first vertex index in the last line
+    int lastBaseInnerIdx = numVertices - numSpectrumBands;
+    
+    // Get the vertex of inner vertex in the first base line
+    int firstBaseInnerIdx = numSpectrumBands;
+    
+    // Get the end vertex index of the last spectrum line
+    int lastSpectrumInnerIdx = numVertices - (numSpectrumBands * 2);
+    
+    // And the first vertex index of the first spectrum line
+    int firstSpectrumInnerIdx = 0;
+    
+    // Add triangles to the mesh
+    mesh.addTriangle(lastBaseInnerIdx, firstBaseInnerIdx, firstSpectrumInnerIdx);
+    mesh.addTriangle(firstSpectrumInnerIdx, lastSpectrumInnerIdx, lastBaseInnerIdx);
+    
+}
+
+//--------------------------------------------------------------
+void ofApp::addBaseToMesh(float period) {
+    
+    // Where does the radius start and end
+    float radialPosStart = radPostStart; // Values for these are imported from settings.xml file
+    float radialPosEnd = radPosEnd;
+    float radialPos = radialPosStart; // current radius between start and end
+    
+    float pctStep = 1 / (float)(numSpectrumBands);  // percentage interpolated between start and end radial pos
+    float pct = 0.0f;
+    
+    // Add vertices for the base
+    // Follow the same process of zig-zag stitching between the two line but with height 0
+    for (int i = 0; i < numSpectrumBands; i++) {
+        
+        pct = pctStep * i;
+        radialPos = (1 - pct) * radialPosStart + (pct) * radialPosEnd;
+        
+        // set point x and y from currentAngle rotation
+        float x = cos(currentAngle) * radialPos;
+        float y = sin(currentAngle) * radialPos;
+        float z = surfaceDepth;    //
+        
+        // Add each point to the mesh
+        ofVec3f p(x, y, z);
+        mesh.addVertex(p);
+        mesh.addColor(ofColor::seaGreen);
+        
+        // Add a normal for each added vertex
+        ofVec3f n(0, 0, -1);
+        mesh.addNormal(n);
+    }
+    
+    // Add the triangles ensure to take the last chunk of vertices and don't include the surface ones
+    
+    // Get the last batch of vertices that were added to the mesh
+    // Weave the new vertices into the existing mesh
+    // This will now be at least 512 * 4, another line has been added for the base of the mesh and will be two previous lines for the base
+    int numVertices = mesh.getNumVertices();
+    
+    // Need to start at total vertices - 2 * num spectrum bands and work through to the end
+    
+    if (numVertices >= (numSpectrumBands * 4)) {
+
+        for(int j = 0; j < numSpectrumBands - 1; j++) {
+
+            // Vertex indices
+            int i1 = numVertices - (numSpectrumBands * 3) + j;
+            int i2 = numVertices - (numSpectrumBands * 3) + 1 + j;
+            int i3 = numVertices - numSpectrumBands + j;
+            int i4 = numVertices - numSpectrumBands + 1 + j;
+
+            mesh.addTriangle(i1, i2, i4);
+            mesh.addTriangle(i4, i3, i1);
+            
+            // The normals that are added for the base all point down (z = -1) so there's no need to
+            // add and normalize them for each triangle
             
         }
         
@@ -229,13 +423,150 @@ void ofApp::addRadialToMesh(float period) {
     
 }
 
+
+//--------------------------------------------------------------
+void ofApp::addCentreToMesh(float period) {
+    // For each line get the base vertex and the
+    // Follow the same logic as adding the side triangles to the mesh
+
+    int numVertices = mesh.getNumVertices();
+    
+    if (numVertices >= (numSpectrumBands * 4)) {
+        
+        // Get first vertex index in the last line
+        int i1 = numVertices - numSpectrumBands;
+        
+        // Get the vertex of the next to last line of the base
+        int i2 = numVertices - (numSpectrumBands * 2);
+        
+        // Get the end vertex index of the last spectrum line
+        int i3 = numVertices - (numSpectrumBands * 3);
+        
+        // And the last vertex index of the spectrum line before the last one
+        int i4 = numVertices - (numSpectrumBands * 4);
+        
+        // Add triangles to the mesh
+        mesh.addTriangle(i1, i2, i4);
+        mesh.addTriangle(i4, i3, i1);
+        
+        // Get the vertices to calulate the normals
+        ofVec3f v1 = mesh.getVertex(i1);
+        ofVec3f v2 = mesh.getVertex(i2);
+        ofVec3f v3 = mesh.getVertex(i3);
+        ofVec3f v4 = mesh.getVertex(i4);
+        
+        // Face normal for the first triangle
+        ofVec3f nTri1 = ( (v2 - v1).crossed( v4 - v1 ) ).normalized();
+        
+        // Face normal for the second triangle
+        ofVec3f nTri2 = ( (v3 - v4).crossed( v1 - v4 ) ).normalized();
+        
+        // Get the corresponding normals for i1-4, accumulate, normalise and reset in the mesh
+        ofVec3f n1 = mesh.getNormal(i1);
+        ofVec3f n2 = mesh.getNormal(i2);
+        ofVec3f n3 = mesh.getNormal(i3);
+        ofVec3f n4 = mesh.getNormal(i4);
+        
+        ofVec3f newN1 = n1 + nTri1 + nTri2;
+        newN1.normalize();
+        mesh.setNormal(i1, newN1);
+        
+        ofVec3f newN2 = n2 + nTri2;
+        newN2.normalize();
+        mesh.setNormal(i2, newN2);
+        
+        ofVec3f newN3 = n3 + nTri2;
+        newN3.normalize();
+        mesh.setNormal(i3, newN3);
+        
+        ofVec3f newN4 = n4 + nTri1 + nTri2;
+        newN4.normalize();
+        mesh.setNormal(i4, newN4);
+        
+    }
+    
+}
+
+
+
+//--------------------------------------------------------------
+void ofApp::addSideToMesh(float period) {
+    // Called after the vertices for the spectrum surface and the vertices for the base have been added.
+    // Get the end vertices for each line - again the line just added (total num vertices less num vertices in each spectrum band)
+    // And the end vertices for lines that make up the base
+    // Normals should point away from the centre
+    
+    int numVertices = mesh.getNumVertices();
+    
+    if (numVertices >= (numSpectrumBands * 4)) {
+        
+        // Get the end vertex of the last line of the base
+        int i1 = numVertices - 1;
+
+        // Get the vertex of the next to last line of the base
+        int i2 = numVertices - 1 - (numSpectrumBands * 2);
+        
+        // Get the end vertex index of the last spectrum line
+        int i3 = numVertices - 1 - numSpectrumBands;
+        
+        // And the last vertex index of the spectrum line before the last one
+        int i4 = numVertices - 1 - (numSpectrumBands * 3);
+        
+        // Add triangles to the mesh
+        mesh.addTriangle(i1, i2, i4);
+        mesh.addTriangle(i4, i3, i1);
+        
+        // Get the vertices to calulate the normals
+        ofVec3f v1 = mesh.getVertex(i1);
+        ofVec3f v2 = mesh.getVertex(i2);
+        ofVec3f v3 = mesh.getVertex(i3);
+        ofVec3f v4 = mesh.getVertex(i4);
+        
+        // Face normal for the first triangle
+        ofVec3f nTri1 = ( (v2 - v1).crossed( v4 - v1 ) ).normalized() * -1;
+        
+        // Face normal for the second triangle
+        ofVec3f nTri2 = ( (v3 - v4).crossed( v1 - v4 ) ).normalized() * -1;
+        
+        // Get the corresponding normals for i1-4, accumulate, normalise and reset in the mesh
+        ofVec3f n1 = mesh.getNormal(i1);
+        ofVec3f n2 = mesh.getNormal(i2);
+        ofVec3f n3 = mesh.getNormal(i3);
+        ofVec3f n4 = mesh.getNormal(i4);
+        
+        ofVec3f newN1 = n1 + nTri1 + nTri2;
+        newN1.normalize();
+        mesh.setNormal(i1, newN1);
+        
+        ofVec3f newN2 = n2 + nTri2;
+        newN2.normalize();
+        mesh.setNormal(i2, newN2);
+        
+        ofVec3f newN3 = n3 + nTri2;
+        newN3.normalize();
+        mesh.setNormal(i3, newN3);
+        
+        ofVec3f newN4 = n4 + nTri1 + nTri2;
+        newN4.normalize();
+        mesh.setNormal(i4, newN4);
+    
+    }
+    
+}
+
+
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
     
     
+}
+
+//--------------------------------------------------------------
+void ofApp::keyReleased(int key){
+    
     switch (key) {
             
-            // Save an image
+        // Save an image
         case 's': {
             ofImage image;
             
@@ -256,6 +587,11 @@ void ofApp::keyPressed(int key){
             
             // Export a PLY mesh
         case 'm': {
+            bFinishMesh = true;
+            
+            // Call functions to connect the last line into the first as well as the rim and inner inners
+            
+            connectLastSpectrumToFirst();
             mesh.save("meshdump_" + ofToString(ofGetUnixTime()) + ".ply");
             cout << "Manual mesh dump : meshdump_" + ofToString(ofGetUnixTime()) + ".ply" << endl;
             break;
@@ -284,11 +620,6 @@ void ofApp::keyPressed(int key){
             }
             break;
     }
-}
-
-//--------------------------------------------------------------
-void ofApp::keyReleased(int key){
-
 }
 
 //--------------------------------------------------------------
