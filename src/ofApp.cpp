@@ -254,8 +254,8 @@ void ofApp::connectLastSpectrumToFirst() {
     
     for (int i = 0; i < numSpectrumBands - 1; i++) {
         // Get the indices of each vertex, starting from the centre
-        int lastIdx1 = numVertices - numSpectrumBands + i;
-        int lastIdx2 = numVertices - numSpectrumBands + 1 + i;
+        int lastIdx1 = numVertices - (numSpectrumBands * 2) + i;
+        int lastIdx2 = numVertices - (numSpectrumBands * 2) + 1 + i;
 
         int firstIdx1 = i;
         int firstIdx2 = i + 1;
@@ -298,9 +298,28 @@ void ofApp::connectLastSpectrumToFirst() {
         mesh.setNormal(firstIdx2, newN4);
     }
 
-
+    // Add the base triangles to the mesh
+    for(int j = 0; j < numSpectrumBands - 1; j++) {
+        
+        // Get the indices of each vertex, starting from the centre
+        int lastBaseIdx1 = numVertices - numSpectrumBands + j;
+        int lastBaseIdx2 = numVertices - numSpectrumBands + 1 + j;
+        
+        int firstBaseIdx1 = numSpectrumBands + j;
+        int firstBaseIdx2 = numSpectrumBands + j + 1;
+        
+        mesh.addTriangle(lastBaseIdx1, lastBaseIdx2, firstBaseIdx2);
+        mesh.addTriangle(firstBaseIdx2, firstBaseIdx1, lastBaseIdx1);
+        
+        // The normals that are added for the base all point down (z = -1) so there's no need to
+        // add and normalize them for each triangle
+        
+    }
+    
     
     // connect the rim vertices
+    
+    
     // connect the inner vertices
 }
 
