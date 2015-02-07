@@ -113,8 +113,8 @@ void ofApp::draw(){
     // Draw the mesh
     cam.begin();
     ofEnableDepthTest();
-    mesh.draw();
-//    mesh.drawWireframe();
+//    mesh.draw();
+    mesh.drawWireframe();
     ofSetColor(255,255,255);
     lightAbove.draw();
     lightBelow.draw();
@@ -242,6 +242,35 @@ void ofApp::addNextSpectrumToMesh(float period) {
         
     }
 
+}
+
+//--------------------------------------------------------------
+void ofApp::connectLastSpectrumToFirst() {
+    // Get the total number of vertices
+    // numSpectrumBands
+
+    int numVertices = mesh.getNumVertices();
+    
+    
+    for (int i = 0; i < numSpectrumBands - 1; i++) {
+        // Get the indices of each vertex, starting from the centre
+        int lastIdx1 = numVertices - numSpectrumBands + i;
+        int lastIdx2 = numVertices - numSpectrumBands + 1 + i;
+
+        int firstIdx1 = i;
+        int firstIdx2 = i + 1;
+        
+        mesh.addTriangle(lastIdx1, lastIdx2, firstIdx2);
+        mesh.addTriangle(firstIdx2, firstIdx1, lastIdx1);
+        
+    }
+    
+    // Subtract num vertices per spectrum to get the first one
+    // 0 to num vertices per spectrum is the first line
+    // work down the line and add triangles
+    
+    // connect the rim vertices
+    // connect the inner vertices
 }
 
 //--------------------------------------------------------------
@@ -451,7 +480,7 @@ void ofApp::keyReleased(int key){
     
     switch (key) {
             
-            // Save an image
+        // Save an image
         case 's': {
             ofImage image;
             
@@ -474,8 +503,9 @@ void ofApp::keyReleased(int key){
         case 'm': {
             bFinishMesh = true;
             
-            // Call functions to
+            // Call functions to connect the last line into the first as well as the rim and inner inners
             
+            connectLastSpectrumToFirst();
             mesh.save("meshdump_" + ofToString(ofGetUnixTime()) + ".ply");
             cout << "Manual mesh dump : meshdump_" + ofToString(ofGetUnixTime()) + ".ply" << endl;
             break;

@@ -64,4 +64,5 @@ class ofApp : public ofBaseApp{
     void addBaseToMesh(float period);
     void addCentreToMesh(float period);
     void addSideToMesh(float period);
+    void connectLastSpectrumToFirst();
 };
