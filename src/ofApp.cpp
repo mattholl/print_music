@@ -317,10 +317,42 @@ void ofApp::connectLastSpectrumToFirst() {
     }
     
     
-    // connect the rim vertices
+    // Add triangles for the rim vertices
     
+    // Get the end vertex of the last line of the base
+    int lastBaseOuterIdx = numVertices - 1;
     
-    // connect the inner vertices
+    // Get the vertex for the end vertex of the first base vertex line
+    int firstBaseOuterIdx = (numSpectrumBands * 2) - 1;
+    
+    // Get the end vertex index of the last spectrum line
+    int lastSpectrumOuterIdx = numVertices - 1 - numSpectrumBands;
+    
+    // And the last vertex index of the spectrum line before the last one
+    int firstSpectrumOuterIdx = numSpectrumBands - 1;
+    
+    // Add triangles to the mesh
+    mesh.addTriangle(lastBaseOuterIdx, firstBaseOuterIdx, firstSpectrumOuterIdx);
+    mesh.addTriangle(firstSpectrumOuterIdx, lastSpectrumOuterIdx, lastBaseOuterIdx);
+    
+    // Add triangles for the inner vertices
+    
+    // Get first vertex index in the last line
+    int lastBaseInnerIdx = numVertices - numSpectrumBands;
+    
+    // Get the vertex of inner vertex in the first base line
+    int firstBaseInnerIdx = numSpectrumBands;
+    
+    // Get the end vertex index of the last spectrum line
+    int lastSpectrumInnerIdx = numVertices - (numSpectrumBands * 2);
+    
+    // And the first vertex index of the first spectrum line
+    int firstSpectrumInnerIdx = 0;
+    
+    // Add triangles to the mesh
+    mesh.addTriangle(lastBaseInnerIdx, firstBaseInnerIdx, firstSpectrumInnerIdx);
+    mesh.addTriangle(firstSpectrumInnerIdx, lastSpectrumInnerIdx, lastBaseInnerIdx);
+    
 }
 
 //--------------------------------------------------------------
