@@ -376,7 +376,7 @@ void ofApp::addBaseToMesh(float period) {
         // set point x and y from currentAngle rotation
         float x = cos(currentAngle) * radialPos;
         float y = sin(currentAngle) * radialPos;
-        float z = -5;    //
+        float z = surfaceDepth;    //
         
         // Add each point to the mesh
         ofVec3f p(x, y, z);
