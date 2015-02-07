@@ -113,8 +113,8 @@ void ofApp::draw(){
     // Draw the mesh
     cam.begin();
     ofEnableDepthTest();
-//    mesh.draw();
-    mesh.drawWireframe();
+    mesh.draw();
+//    mesh.drawWireframe();
     ofSetColor(255,255,255);
     lightAbove.draw();
     lightBelow.draw();
@@ -263,11 +263,42 @@ void ofApp::connectLastSpectrumToFirst() {
         mesh.addTriangle(lastIdx1, lastIdx2, firstIdx2);
         mesh.addTriangle(firstIdx2, firstIdx1, lastIdx1);
         
+        // Get the vertices to calulate the normals
+        ofVec3f v1 = mesh.getVertex(lastIdx1);
+        ofVec3f v2 = mesh.getVertex(lastIdx2);
+        ofVec3f v3 = mesh.getVertex(firstIdx1);
+        ofVec3f v4 = mesh.getVertex(firstIdx2);
+        
+        // Face normal for the first triangle
+        ofVec3f nTri1 = ( (v2 - v1).crossed( v4 - v1 ) ).normalized();
+        
+        // Face normal for the second triangle
+        ofVec3f nTri2 = ( (v3 - v4).crossed( v1 - v4 ) ).normalized();
+        
+        // Get the corresponding normals for i1-4, accumulate, normalise and reset in the mesh
+        ofVec3f n1 = mesh.getNormal(lastIdx1);
+        ofVec3f n2 = mesh.getNormal(lastIdx2);
+        ofVec3f n3 = mesh.getNormal(firstIdx1);
+        ofVec3f n4 = mesh.getNormal(firstIdx2);
+        
+        ofVec3f newN1 = n1 + nTri1 + nTri2;
+        newN1.normalize();
+        mesh.setNormal(lastIdx1, newN1);
+        
+        ofVec3f newN2 = n2 + nTri2;
+        newN2.normalize();
+        mesh.setNormal(lastIdx2, newN2);
+        
+        ofVec3f newN3 = n3 + nTri2;
+        newN3.normalize();
+        mesh.setNormal(firstIdx1, newN3);
+        
+        ofVec3f newN4 = n4 + nTri1 + nTri2;
+        newN4.normalize();
+        mesh.setNormal(firstIdx2, newN4);
     }
-    
-    // Subtract num vertices per spectrum to get the first one
-    // 0 to num vertices per spectrum is the first line
-    // work down the line and add triangles
+
+
     
     // connect the rim vertices
     // connect the inner vertices
