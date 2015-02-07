@@ -46,7 +46,7 @@ class ofApp : public ofBaseApp{
     bool bFinishMesh = false;       // Set this tie the last FFT spectrum band into the first,
                                     // when set to true no more bands will be added to the mesh
     
-    int surfaceDepth = -20;
+    int surfaceDepth;               // How far below the surface FFT will the base be placed
     
     //    int bandRad = 2;                // Band index spectrum bass drum
     //    int bandVel = 100;              // Band index in spectrum snare

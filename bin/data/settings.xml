@@ -14,4 +14,5 @@
     <radial-position-start>10</radial-position-start>
     <radial-position-end>1000</radial-position-end>
     <line-resolution>1</line-resolution>
+    <base-surface-depth>-20</base-surface-depth>
 </settings>

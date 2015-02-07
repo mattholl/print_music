@@ -32,6 +32,7 @@ void ofApp::setup(){
     radPostStart = XML.getValue("settings:radial-position-start", 10);
     radPosEnd = XML.getValue("settings:radial-position-end", 1000);
     lineResolution = XML.getValue("settings:line-resolution", 1);
+    surfaceDepth = XML.getValue("settings:base-surface-depth", -20);
     
     // Set up sound sample
     sound.loadSound(fileName);
@@ -115,9 +116,12 @@ void ofApp::draw(){
     ofEnableDepthTest();
     mesh.draw();
 //    mesh.drawWireframe();
-    ofSetColor(255,255,255);
-    lightAbove.draw();
-    lightBelow.draw();
+
+    if(bShowInfo) {
+        ofSetColor(255,255,255);
+        lightAbove.draw();
+        lightBelow.draw();
+    }
     
     ofDisableDepthTest();
     cam.end();
