@@ -1,0 +1,15 @@
+{
+  "name": "tone-generator",
+  "version": "1.0.0",
+  "description": "Generate wav tones for testing the openFrameworks mesh generation.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "@mattholl",
+  "license": "ISC",
+  "dependencies": {
+    "tonegenerator": "0.0.2",
+    "waveheader": "0.0.2"
+  }
+}

@@ -112,3 +112,5 @@ bin/data/*.wav
 bin/data/*.ply
 bin/data/*.png
 blender-files/*
+tone-generator/node_modules
+tone-generator/tones
