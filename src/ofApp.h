@@ -37,7 +37,8 @@ class ofApp : public ofBaseApp{
     
     int numSpectrumBands;           // Number of bands in spectrum
     vector<float> spectrum;         // Smoothed spectrum values
-    
+    vector<int> innerVertexIndices; // Keep an array of all of the first and last vertices in each line
+    vector<int> outerVertexIndices;
     
     // ---
     // Runtime info

@@ -204,6 +204,16 @@ void ofApp::addNextSpectrumToMesh(float period) {
             int i3 = numVertices - numSpectrumBands + j;
             int i4 = numVertices - numSpectrumBands + 1 + j;
             
+            // Push the index of the first vertex in the previous line into an array
+            if(j == 0) {
+                innerVertexIndices.push_back(i1);
+            }
+            
+            // Push the end vertex of each line into an array
+            if(j == numSpectrumBands - 2) {
+                outerVertexIndices.push_back(i2);
+            }
+            
             mesh.addTriangle(i1, i2, i4);
             mesh.addTriangle(i4, i3, i1);
             
@@ -287,6 +297,8 @@ void ofApp::keyReleased(int key){
             // Call functions to connect the last line into the first as well as the rim and inner inners
             
 //            connectLastSpectrumToFirst();
+            
+            
             
             mesh.save("meshdump_" + ofToString(ofGetUnixTime()) + ".ply");
             cout << "Manual mesh dump : meshdump_" + ofToString(ofGetUnixTime()) + ".ply" << endl;
