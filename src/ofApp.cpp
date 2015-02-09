@@ -257,7 +257,36 @@ void ofApp::addNextSpectrumToMesh(float period) {
 
 }
 
+//--------------------------------------------------------------
+void ofApp::addCentralCylinder() {
+    // loop innerVertexIndices
+    // get the vertex position
+    // add a point a set height above - same x, y, fixed z - keep these in another array and loop over to add the flat top
+    // if we're the second time through
+    //      get the next vertex
+    //      get the vertex of the upper ring
+    //      add two triangles between the four vertices
+    //      add normals etc.
+    
+    // Find the tallest point and use that as the z value for the upper circle rim
+    for (int i = 0; i < innerVertexIndices.size(); i++) {
+        
 
+        ofVec3f v1 = mesh.getVertex(innerVertexIndices[i]);
+        
+    }
+    
+        // Add top vertex
+    
+    
+    // add centralCylinderTop()
+    // loop over the arrays of top vertices created above (just pass in to function)
+    // add a single central point and add triangles to connect them all together
+    
+    // the same logic for the base - add a vertex below the outer rim, add triangles between them on the rim
+    // add a central point at the base and triangles to connect it all together
+    
+}
 
 
 //--------------------------------------------------------------
@@ -298,10 +327,12 @@ void ofApp::keyReleased(int key){
             
 //            connectLastSpectrumToFirst();
             
+            addCentralCylinder();
             
             
-            mesh.save("meshdump_" + ofToString(ofGetUnixTime()) + ".ply");
-            cout << "Manual mesh dump : meshdump_" + ofToString(ofGetUnixTime()) + ".ply" << endl;
+            
+//            mesh.save("meshdump_" + ofToString(ofGetUnixTime()) + ".ply");
+//            cout << "Manual mesh dump : meshdump_" + ofToString(ofGetUnixTime()) + ".ply" << endl;
             break;
         }
             

@@ -64,8 +64,9 @@ class ofApp : public ofBaseApp{
     
     // Function which will add vertices and triangles to the mesh
     void addNextSpectrumToMesh(float period);
-    void addBaseToMesh(float period);
-    void addCentreToMesh(float period);
-    void addSideToMesh(float period);
+//    void addBaseToMesh(float period);
+//    void addCentreToMesh(float period);
+//    void addSideToMesh(float period);
     void connectLastSpectrumToFirst();
+    void addCentralCylinder();
 };
