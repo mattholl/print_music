@@ -115,6 +115,7 @@ void ofApp::draw(){
     ofEnableDepthTest();
 //    mesh.draw();
     mesh.drawWireframe();
+//    mesh.drawVertices();
 
     if(bShowInfo) {
         ofSetColor(255,255,255);
@@ -261,22 +262,60 @@ void ofApp::addNextSpectrumToMesh(float period) {
 void ofApp::addCentralCylinder() {
     // loop innerVertexIndices
     // get the vertex position
-    // add a point a set height above - same x, y, fixed z - keep these in another array and loop over to add the flat top
+    // add a point a set height above - same x, y, fixed z
+    // keep these in another array and loop over to add the flat top
     // if we're the second time through
     //      get the next vertex
     //      get the vertex of the upper ring
     //      add two triangles between the four vertices
     //      add normals etc.
     
+    float largestZ = 0;
+    vector<int> topRimVertices;
+    
     // Find the tallest point and use that as the z value for the upper circle rim
     for (int i = 0; i < innerVertexIndices.size(); i++) {
         
-
         ofVec3f v1 = mesh.getVertex(innerVertexIndices[i]);
+        if(v1.z > largestZ) {
+            largestZ = v1.z;
+        }
         
     }
     
-        // Add top vertex
+    // Add a vertex above each of the inner vertices
+    for (int i = 0; i < innerVertexIndices.size(); i++) {
+        ofVec3f v1 = mesh.getVertex(innerVertexIndices[i]);
+        
+        // Create a new point and add it to the mesh
+        ofVec3f p(v1.x, v1.y, largestZ);
+        mesh.addVertex(p);
+        mesh.addColor(ofColor::seaGreen);
+        
+        // Add a normal for each added vertex - we'll figure out the correct normal vector later
+        ofVec3f n(0, 0, 1);
+        mesh.addNormal(n);
+        
+        // Cache the mesh index of point just added - this will be used to construct the top surface
+        topRimVertices.push_back(mesh.getNumVertices() - 1);
+        
+        if (i > 0) {
+            // Add two triangles between the vertex just added + the previous just added vertex (index will be this one -1)
+            // with the inner ring vertices
+            int currSpectrumIdx = innerVertexIndices[i];
+            int prevSpectrumIdx = innerVertexIndices[i - 1];
+            
+            int currTopRingIdx = topRimVertices[i];
+            int prevTopRingIdx = topRimVertices[i - 1];
+            
+            mesh.addTriangle(currSpectrumIdx, prevSpectrumIdx, prevTopRingIdx);
+            mesh.addTriangle(prevTopRingIdx, currTopRingIdx, currSpectrumIdx);
+            
+        }
+    }
+    
+    
+    
     
     
     // add centralCylinderTop()
