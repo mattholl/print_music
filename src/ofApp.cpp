@@ -186,7 +186,7 @@ void ofApp::addNextSpectrumToMesh(float period) {
     }
     
     // Weave the new vertices into the existing mesh
-    int numVertices = mesh.getNumVertices();    // At least 256 * 3 (for the line added at the base as well)
+    int numVertices = mesh.getNumVertices();    // At least 256 * 2 (for the line added at the base as well)
     
     // Ensure there are at least two rows of vertices for the top surface - there will be one row of vertices inbetween each
     // surface line of vertices which added for the base
@@ -204,8 +204,6 @@ void ofApp::addNextSpectrumToMesh(float period) {
             int i2 = numVertices - (numSpectrumBands * 2) + 1 + j;
             int i3 = numVertices - numSpectrumBands + j;
             int i4 = numVertices - numSpectrumBands + 1 + j;
-            
-
             
             // Push the index of the first vertex in the previous line into an array
             if(j == 0) {
@@ -243,7 +241,7 @@ void ofApp::connectLastSpectrumToFirst() {
     
     for (int i = 0; i < numSpectrumBands - 1; i++) {
         
-        // Get the
+        // Get each vertices on each line of the first and last spectrum lines
         int lastIdx1 = numVertices - numSpectrumBands + i;
         int lastIdx2 = numVertices - numSpectrumBands + 1 + i;
         
@@ -253,52 +251,15 @@ void ofApp::connectLastSpectrumToFirst() {
         mesh.addTriangle(lastIdx1, lastIdx2, firstIdx2);
         mesh.addTriangle(firstIdx2, firstIdx1, lastIdx1);
         
+        updateNormals(lastIdx1, lastIdx2, firstIdx1, firstIdx2, false);
         
-//        updateNormals(currSpectrumIdx, prevSpectrumIdx, currTopRingIdx, prevTopRingIdx, false);
-        
-        // Get the vertices to calulate the normals
-        ofVec3f v1 = mesh.getVertex(lastIdx1);
-        ofVec3f v2 = mesh.getVertex(lastIdx2);
-        ofVec3f v3 = mesh.getVertex(firstIdx1);
-        ofVec3f v4 = mesh.getVertex(firstIdx2);
-        
-        // Face normal for the first triangle
-        ofVec3f nTri1 = ( (v2 - v1).crossed( v4 - v1 ) ).normalized();
-        
-        // Face normal for the second triangle
-        ofVec3f nTri2 = ( (v3 - v4).crossed( v1 - v4 ) ).normalized();
-        
-        // Get the corresponding normals for i1-4, accumulate, normalise and reset in the mesh
-        ofVec3f n1 = mesh.getNormal(lastIdx1);
-        ofVec3f n2 = mesh.getNormal(lastIdx2);
-        ofVec3f n3 = mesh.getNormal(firstIdx1);
-        ofVec3f n4 = mesh.getNormal(firstIdx2);
-        
-        ofVec3f newN1 = n1 + nTri1 + nTri2;
-        newN1.normalize();
-        mesh.setNormal(lastIdx1, newN1);
-        
-        ofVec3f newN2 = n2 + nTri2;
-        newN2.normalize();
-        mesh.setNormal(lastIdx2, newN2);
-        
-        ofVec3f newN3 = n3 + nTri2;
-        newN3.normalize();
-        mesh.setNormal(firstIdx1, newN3);
-        
-        ofVec3f newN4 = n4 + nTri1 + nTri2;
-        newN4.normalize();
-        mesh.setNormal(firstIdx2, newN4);
     }
-    
-
-    
-
     
 }
 
 //--------------------------------------------------------------
 void ofApp::addCentralCylinder() {
+
     // loop innerVertexIndices
     // get the vertex position
     // add a point a set height above - same x, y, fixed z
@@ -308,6 +269,8 @@ void ofApp::addCentralCylinder() {
     //      get the vertex of the upper ring
     //      add two triangles between the four vertices
     //      add normals etc.
+    
+    ofIndexType lastVertex = mesh.getNumVertices();
     
     float largestZ = 0;
     vector<int> topRimVertices;
@@ -357,9 +320,17 @@ void ofApp::addCentralCylinder() {
         }
     }
     
+    // Add the inner wall triangles between the first and last upper vertices and the first and last spectrum vertices
+    ofIndexType topRimFirstVertex = topRimVertices[0];
+    ofIndexType topRimLastVertex = topRimVertices.back();
     
+    ofIndexType spectrumFirstVertex = 0;
+    ofIndexType spectrumLastVertex = lastVertex - numSpectrumBands;
     
+    mesh.addTriangle(topRimFirstVertex, topRimLastVertex, spectrumLastVertex);
+    mesh.addTriangle(spectrumLastVertex, spectrumFirstVertex, topRimFirstVertex);
     
+    updateNormals(topRimFirstVertex, topRimLastVertex, spectrumFirstVertex, spectrumLastVertex, false);
     
     // add centralCylinderTop()
     // loop over the arrays of top vertices created above (just pass in to function)
@@ -450,8 +421,10 @@ void ofApp::keyReleased(int key){
             bFinishMesh = true;
             
             // Call the functions to finish off the mesh.
+            // The order matters, adding the central cylinder and edges adds more vertices to the mesh,
+            // connecting the last to the first lines relys on the order of the vertices as the were put into the mesh
             connectLastSpectrumToFirst();
-//            addCentralCylinder();
+            addCentralCylinder();
             
             
             
