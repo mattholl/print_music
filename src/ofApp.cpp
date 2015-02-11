@@ -219,7 +219,6 @@ void ofApp::addNextSpectrumToMesh(float period) {
                 innerVertexIndices.push_back(i3);
             }
             
-            
             // Push the end vertex of each line into an array
             if(j == numSpectrumBands - 2) {
                 outerVertexIndices.push_back(i2);
@@ -228,39 +227,8 @@ void ofApp::addNextSpectrumToMesh(float period) {
             mesh.addTriangle(i1, i2, i4);
             mesh.addTriangle(i4, i3, i1);
             
-            // Get the vertices to calculate the normals
-            ofVec3f v1 = mesh.getVertex(i1);
-            ofVec3f v2 = mesh.getVertex(i2);
-            ofVec3f v3 = mesh.getVertex(i3);
-            ofVec3f v4 = mesh.getVertex(i4);
-            
-            // Face normal for the first triangle
-            ofVec3f nTri1 = ( (v2 - v1).crossed( v4 - v1 ) ).normalized();
-            
-            // Face normal for the second triangle
-            ofVec3f nTri2 = ( (v3 - v4).crossed( v1 - v4 ) ).normalized();
-            
-            // Get the corresponding normals for i1-4, accumulate, normalise and reset in the mesh
-            ofVec3f n1 = mesh.getNormal(i1);
-            ofVec3f n2 = mesh.getNormal(i2);
-            ofVec3f n3 = mesh.getNormal(i3);
-            ofVec3f n4 = mesh.getNormal(i4);
-            
-            ofVec3f newN1 = n1 + nTri1 + nTri2;
-            newN1.normalize();
-            mesh.setNormal(i1, newN1);
-            
-            ofVec3f newN2 = n2 + nTri2;
-            newN2.normalize();
-            mesh.setNormal(i2, newN2);
-            
-            ofVec3f newN3 = n3 + nTri2;
-            newN3.normalize();
-            mesh.setNormal(i3, newN3);
-            
-            ofVec3f newN4 = n4 + nTri1 + nTri2;
-            newN4.normalize();
-            mesh.setNormal(i4, newN4);
+            // Update the normals
+            updateNormals(i1, i2, i3, i4, false);
             
         }
         
@@ -321,39 +289,9 @@ void ofApp::addCentralCylinder() {
             mesh.addTriangle(currSpectrumIdx, prevSpectrumIdx, prevTopRingIdx);
             mesh.addTriangle(prevTopRingIdx, currTopRingIdx, currSpectrumIdx);
 
-            // Get the vertices to calculate the normals
-            ofVec3f v1 = mesh.getVertex(currSpectrumIdx);
-            ofVec3f v2 = mesh.getVertex(prevSpectrumIdx);
-            ofVec3f v3 = mesh.getVertex(currTopRingIdx);
-            ofVec3f v4 = mesh.getVertex(prevTopRingIdx);
             
-            // Face normal for the first triangle
-            ofVec3f nTri1 = ( (v2 - v1).crossed( v4 - v1 ) ).normalized() * -1;
-            
-            // Face normal for the second triangle
-            ofVec3f nTri2 = ( (v3 - v4).crossed( v1 - v4 ) ).normalized() * -1;
-            
-            // Get the corresponding normals for i1-4, accumulate, normalise and reset in the mesh
-            ofVec3f n1 = mesh.getNormal(currSpectrumIdx);
-            ofVec3f n2 = mesh.getNormal(prevSpectrumIdx);
-            ofVec3f n3 = mesh.getNormal(currTopRingIdx);
-            ofVec3f n4 = mesh.getNormal(prevTopRingIdx);
-            
-            ofVec3f newN1 = n1 + nTri1 + nTri2;
-            newN1.normalize();
-            mesh.setNormal(currSpectrumIdx, newN1);
-            
-            ofVec3f newN2 = n2 + nTri2;
-            newN2.normalize();
-            mesh.setNormal(prevSpectrumIdx, newN2);
-            
-            ofVec3f newN3 = n3 + nTri2;
-            newN3.normalize();
-            mesh.setNormal(currTopRingIdx, newN3);
-            
-            ofVec3f newN4 = n4 + nTri1 + nTri2;
-            newN4.normalize();
-            mesh.setNormal(prevTopRingIdx, newN4);
+            // Maybe the triangle winding is incorrect - the normals need to be inverted
+            updateNormals(currSpectrumIdx, prevSpectrumIdx, currTopRingIdx, prevTopRingIdx, true);
             
         }
     }
@@ -369,6 +307,50 @@ void ofApp::addCentralCylinder() {
     // the same logic for the base - add a vertex below the outer rim, add triangles between them on the rim
     // add a central point at the base and triangles to connect it all together
     
+}
+
+//--------------------------------------------------------------
+void ofApp::updateNormals(ofIndexType i1, ofIndexType i2, ofIndexType i3, ofIndexType i4, bool invert) {
+    
+    int direction = 1;
+    
+    if(invert) {
+        direction = -1;
+    }
+    
+    // Get the vertices to calculate the normals
+    ofVec3f v1 = mesh.getVertex(i1);
+    ofVec3f v2 = mesh.getVertex(i2);
+    ofVec3f v3 = mesh.getVertex(i3);
+    ofVec3f v4 = mesh.getVertex(i4);
+    
+    // Face normal for the first triangle
+    ofVec3f nTri1 = ( (v2 - v1).crossed( v4 - v1 ) ).normalized() * direction;
+    
+    // Face normal for the second triangle
+    ofVec3f nTri2 = ( (v3 - v4).crossed( v1 - v4 ) ).normalized() * direction;
+    
+    // Get the corresponding normals for i1-4, accumulate, normalise and reset in the mesh
+    ofVec3f n1 = mesh.getNormal(i1);
+    ofVec3f n2 = mesh.getNormal(i2);
+    ofVec3f n3 = mesh.getNormal(i3);
+    ofVec3f n4 = mesh.getNormal(i4);
+    
+    ofVec3f newN1 = n1 + nTri1 + nTri2;
+    newN1.normalize();
+    mesh.setNormal(i1, newN1);
+    
+    ofVec3f newN2 = n2 + nTri2;
+    newN2.normalize();
+    mesh.setNormal(i2, newN2);
+    
+    ofVec3f newN3 = n3 + nTri2;
+    newN3.normalize();
+    mesh.setNormal(i3, newN3);
+    
+    ofVec3f newN4 = n4 + nTri1 + nTri2;
+    newN4.normalize();
+    mesh.setNormal(i4, newN4);
 }
 
 

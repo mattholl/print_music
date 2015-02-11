@@ -60,7 +60,7 @@ class ofApp : public ofBaseApp{
     ofLight lightBelow;
     
     float currentAngle = 0;         // Accumlated rotation for the current line
-    float time0;          // Regularly add a line to the mesh
+    float time0;                    // Regularly add a line to the mesh
     
     // Function which will add vertices and triangles to the mesh
     void addNextSpectrumToMesh(float period);
@@ -69,4 +69,7 @@ class ofApp : public ofBaseApp{
 //    void addSideToMesh(float period);
     void connectLastSpectrumToFirst();
     void addCentralCylinder();
+    
+    // Takes four indices and updates the corresponding normals
+    void updateNormals(ofIndexType i1, ofIndexType i2, ofIndexType i3, ofIndexType i4, bool invert);
 };
