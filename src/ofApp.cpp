@@ -205,10 +205,20 @@ void ofApp::addNextSpectrumToMesh(float period) {
             int i3 = numVertices - numSpectrumBands + j;
             int i4 = numVertices - numSpectrumBands + 1 + j;
             
+
+            
             // Push the index of the first vertex in the previous line into an array
             if(j == 0) {
-                innerVertexIndices.push_back(i1);
+                
+                // And the first time through add the first top vertex
+                if(numVertices == (numSpectrumBands * 2)) {
+                    ofIndexType firstVertex = 0;
+                    innerVertexIndices.push_back(i1);
+                }
+                
+                innerVertexIndices.push_back(i3);
             }
+            
             
             // Push the end vertex of each line into an array
             if(j == numSpectrumBands - 2) {
