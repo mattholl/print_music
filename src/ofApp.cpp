@@ -352,6 +352,9 @@ void ofApp::addSideToMesh() {
     // This will be passed into another function for adding the triangles at the base
     vector<int> lowerRimVertices;
     
+    // Subract the vertices added when tying up the inner vertices so that we get the last vertex of the surface lines
+    ofIndexType lastVertex = mesh.getNumVertices() - innerVertexIndices.size() - 1;
+    
     // Add an outer rim of triangles
     for (int i = 0; i < outerVertexIndices.size(); i++) {
         ofVec3f v1 = mesh.getVertex(outerVertexIndices[i]);
@@ -387,6 +390,18 @@ void ofApp::addSideToMesh() {
             
         }
     }
+    
+    // Join up the last with the first vertices
+    ofIndexType lowerRimFirstVertex = lowerRimVertices[0];
+    ofIndexType lowerRimLastVertex = lowerRimVertices.back();
+    
+    ofIndexType spectrumFirstVertex = numSpectrumBands - 1;
+    ofIndexType spectrumLastVertex = lastVertex;
+    
+    mesh.addTriangle(lowerRimFirstVertex, lowerRimLastVertex, spectrumLastVertex);
+    mesh.addTriangle(spectrumLastVertex, spectrumFirstVertex, lowerRimFirstVertex);
+    
+    updateNormals(lowerRimFirstVertex, lowerRimLastVertex, spectrumFirstVertex, spectrumLastVertex, true);
 }
 
 //--------------------------------------------------------------
