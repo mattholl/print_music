@@ -49,7 +49,7 @@ void ofApp::setup(){
     }
     
     cam.setFarClip(20000);
-    cam.setDistance(500);
+    cam.setDistance(2000);
     
     lightAbove.enable();
     lightAbove.setPointLight();
@@ -210,7 +210,6 @@ void ofApp::addNextSpectrumToMesh(float period) {
                 
                 // And the first time through add the first top vertex
                 if(numVertices == (numSpectrumBands * 2)) {
-                    ofIndexType firstVertex = 0;
                     innerVertexIndices.push_back(i1);
                 }
                 
@@ -219,7 +218,12 @@ void ofApp::addNextSpectrumToMesh(float period) {
             
             // Push the end vertex of each line into an array
             if(j == numSpectrumBands - 2) {
-                outerVertexIndices.push_back(i2);
+                
+                if(numVertices == (numSpectrumBands * 2)) {
+                    outerVertexIndices.push_back(i2);
+                }
+                
+                outerVertexIndices.push_back(i4);
             }
             
             mesh.addTriangle(i1, i2, i4);
@@ -342,6 +346,50 @@ void ofApp::addCentralCylinder() {
 }
 
 //--------------------------------------------------------------
+void ofApp::addSideToMesh() {
+    
+    // An array to cache the indices of the vertices that we're adding.
+    // This will be passed into another function for adding the triangles at the base
+    vector<int> lowerRimVertices;
+    
+    // Add an outer rim of triangles
+    for (int i = 0; i < outerVertexIndices.size(); i++) {
+        ofVec3f v1 = mesh.getVertex(outerVertexIndices[i]);
+        
+        // Create a new point and add it to the mesh
+        // surfaceDepth is read from the configuration file
+        ofVec3f p(v1.x, v1.y, surfaceDepth);
+        mesh.addVertex(p);
+        mesh.addColor(ofColor::seaGreen);
+        
+        // Add a normal for each added vertex - we'll figure out the correct normal vector later
+        ofVec3f n(0, 0, 1);
+        mesh.addNormal(n);
+        
+        // Cache the mesh index of point just added - this will be used to construct the top surface
+        lowerRimVertices.push_back(mesh.getNumVertices() - 1);
+        
+        if (i > 0) {
+            // Add two triangles between the vertex just added + the previous just added vertex (index will be this one -1)
+            // with the inner ring vertices
+            int currOuterEdgeVertex = outerVertexIndices[i];
+            int prevOuterEdgeVertex = outerVertexIndices[i - 1];
+            
+            int currLowerRimVertex = lowerRimVertices[i];
+            int prevLowerRimVertex = lowerRimVertices[i - 1];
+            
+            mesh.addTriangle(currOuterEdgeVertex, prevOuterEdgeVertex, prevLowerRimVertex);
+            mesh.addTriangle(prevLowerRimVertex, currLowerRimVertex, currOuterEdgeVertex);
+            
+            
+            // Maybe the triangle winding is incorrect - the normals need to be inverted
+            updateNormals(currOuterEdgeVertex, prevOuterEdgeVertex, currLowerRimVertex, prevLowerRimVertex, false);
+            
+        }
+    }
+}
+
+//--------------------------------------------------------------
 void ofApp::updateNormals(ofIndexType i1, ofIndexType i2, ofIndexType i3, ofIndexType i4, bool invert) {
     
     int direction = 1;
@@ -425,7 +473,7 @@ void ofApp::keyReleased(int key){
             // connecting the last to the first lines relys on the order of the vertices as the were put into the mesh
             connectLastSpectrumToFirst();
             addCentralCylinder();
-            
+            addSideToMesh();
             
             
 //            mesh.save("meshdump_" + ofToString(ofGetUnixTime()) + ".ply");
