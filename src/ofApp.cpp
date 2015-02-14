@@ -277,7 +277,7 @@ void ofApp::addCentralCylinder() {
     ofIndexType lastVertex = mesh.getNumVertices();
     
     float largestZ = 0;
-    vector<int> topRimVertices;
+    vector<ofIndexType> topRimVertices;
     
     // Find the tallest point and use that as the z value for the upper circle rim
     for (int i = 0; i < innerVertexIndices.size(); i++) {
@@ -336,12 +336,40 @@ void ofApp::addCentralCylinder() {
     
     updateNormals(topRimFirstVertex, topRimLastVertex, spectrumFirstVertex, spectrumLastVertex, false);
     
-    // add centralCylinderTop()
-    // loop over the arrays of top vertices created above (just pass in to function)
-    // add a single central point and add triangles to connect them all together
+    // Add the top plane to the cylinder in the centre
+    addMeshTop(topRimVertices, largestZ);
     
-    // the same logic for the base - add a vertex below the outer rim, add triangles between them on the rim
-    // add a central point at the base and triangles to connect it all together
+}
+
+//--------------------------------------------------------------
+void ofApp::addMeshTop(vector<ofIndexType> topRimVertices, float largestZ) {
+    
+    // Add the centre vertex of the top surface
+    // Create a new point and add it to the mesh
+    ofVec3f p(0, 0, largestZ);
+    mesh.addVertex(p);
+    mesh.addColor(ofColor::seaGreen);
+    
+    // Add a normal for each added vertex - we'll figure out the correct normal vector later
+    ofVec3f n(0, 0, 1);
+    mesh.addNormal(n);
+    
+    // Get the vertex index of the point just added
+    int centreVertexIndex = mesh.getNumVertices() - 1;
+    
+    // Loop over the arrays of top vertices and connect them all to each other and the central vertex
+    
+    for (int i = 0; i < topRimVertices.size(); i++) {
+        
+        if(i < topRimVertices.size() - 1) {
+            mesh.addTriangle(topRimVertices[i + 1], topRimVertices[i], centreVertexIndex);
+        } else {
+            mesh.addTriangle(topRimVertices[0], topRimVertices[i], centreVertexIndex);
+        }
+        
+        mesh.addColor(ofColor::seaGreen);
+        
+    }
     
 }
 
@@ -353,7 +381,7 @@ void ofApp::addSideToMesh() {
     vector<int> lowerRimVertices;
     
     // Subract the vertices added when tying up the inner vertices so that we get the last vertex of the surface lines
-    ofIndexType lastVertex = mesh.getNumVertices() - innerVertexIndices.size() - 1;
+    ofIndexType lastVertex = mesh.getNumVertices() - innerVertexIndices.size() - 2; // Minus two here because another vertex was added for the top centre
     
     // Add an outer rim of triangles
     for (int i = 0; i < outerVertexIndices.size(); i++) {

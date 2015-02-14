@@ -69,6 +69,7 @@ class ofApp : public ofBaseApp{
 
     void connectLastSpectrumToFirst();
     void addCentralCylinder();
+    void addMeshTop(vector<ofIndexType> topRimVertices, float largestZ);
     void addSideToMesh();
     
     // Takes four indices and updates the corresponding normals
