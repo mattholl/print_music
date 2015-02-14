@@ -337,21 +337,27 @@ void ofApp::addCentralCylinder() {
     updateNormals(topRimFirstVertex, topRimLastVertex, spectrumFirstVertex, spectrumLastVertex, false);
     
     // Add the top plane to the cylinder in the centre
-    addMeshTop(topRimVertices, largestZ);
+    addMeshCap(topRimVertices, largestZ);
     
 }
 
 //--------------------------------------------------------------
-void ofApp::addMeshTop(vector<ofIndexType> topRimVertices, float largestZ) {
+void ofApp::addMeshCap(vector<ofIndexType> vertices, float height) {
     
     // Add the centre vertex of the top surface
     // Create a new point and add it to the mesh
-    ofVec3f p(0, 0, largestZ);
+    ofVec3f p(0, 0, height);
     mesh.addVertex(p);
     mesh.addColor(ofColor::seaGreen);
     
-    // Add a normal for each added vertex - we'll figure out the correct normal vector later
-    ofVec3f n(0, 0, 1);
+    ofVec3f n(0, 0, 0);
+    // Add a normal the centre top or bottom
+    if (height > 0) {
+        n.z = 1;  // A normal facing up for the top surface
+    } else {
+        n.z = -1; // A normal facing down for the bottom surface
+    }
+    
     mesh.addNormal(n);
     
     // Get the vertex index of the point just added
@@ -359,12 +365,12 @@ void ofApp::addMeshTop(vector<ofIndexType> topRimVertices, float largestZ) {
     
     // Loop over the arrays of top vertices and connect them all to each other and the central vertex
     
-    for (int i = 0; i < topRimVertices.size(); i++) {
+    for (int i = 0; i < vertices.size(); i++) {
         
-        if(i < topRimVertices.size() - 1) {
-            mesh.addTriangle(topRimVertices[i + 1], topRimVertices[i], centreVertexIndex);
+        if(i < vertices.size() - 1) {
+            mesh.addTriangle(vertices[i + 1], vertices[i], centreVertexIndex);
         } else {
-            mesh.addTriangle(topRimVertices[0], topRimVertices[i], centreVertexIndex);
+            mesh.addTriangle(vertices[0], vertices[i], centreVertexIndex);
         }
         
         mesh.addColor(ofColor::seaGreen);
@@ -378,7 +384,7 @@ void ofApp::addSideToMesh() {
     
     // An array to cache the indices of the vertices that we're adding.
     // This will be passed into another function for adding the triangles at the base
-    vector<int> lowerRimVertices;
+    vector<ofIndexType> lowerRimVertices;
     
     // Subract the vertices added when tying up the inner vertices so that we get the last vertex of the surface lines
     ofIndexType lastVertex = mesh.getNumVertices() - innerVertexIndices.size() - 2; // Minus two here because another vertex was added for the top centre
@@ -430,6 +436,9 @@ void ofApp::addSideToMesh() {
     mesh.addTriangle(spectrumLastVertex, spectrumFirstVertex, lowerRimFirstVertex);
     
     updateNormals(lowerRimFirstVertex, lowerRimLastVertex, spectrumFirstVertex, spectrumLastVertex, true);
+    
+    // Add the top plane to the cylinder in the centre
+    addMeshCap(lowerRimVertices, 0.0);
 }
 
 //--------------------------------------------------------------
