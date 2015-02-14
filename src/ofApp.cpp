@@ -96,10 +96,9 @@ void ofApp::update(){
         float angleVelocity = TWO_PI / (float)fileLength * period;  // rads per second
         currentAngle += angleVelocity;  // Update global value
         
+        // If the key to dump a mesh .ply file has been pressed then we shouldn't add any more spectrum lines
         if(!bFinishMesh) {
             addNextSpectrumToMesh(period);
-//            addBaseToMesh(period);
-//            addSideToMesh(period);
         }
         
         time0 = time;
@@ -229,7 +228,7 @@ void ofApp::addNextSpectrumToMesh(float period) {
             mesh.addTriangle(i1, i2, i4);
             mesh.addTriangle(i4, i3, i1);
             
-            // Update the normals
+            // Recalculate the normals
             updateNormals(i1, i2, i3, i4, false);
             
         }
@@ -263,20 +262,14 @@ void ofApp::connectLastSpectrumToFirst() {
 
 //--------------------------------------------------------------
 void ofApp::addCentralCylinder() {
-
-    // loop innerVertexIndices
-    // get the vertex position
-    // add a point a set height above - same x, y, fixed z
-    // keep these in another array and loop over to add the flat top
-    // if we're the second time through
-    //      get the next vertex
-    //      get the vertex of the upper ring
-    //      add two triangles between the four vertices
-    //      add normals etc.
     
+    // Get the last vertex in the array - used later to know where to attach the last spectrum line back into the first
     ofIndexType lastVertex = mesh.getNumVertices();
     
     float largestZ = 0;
+    
+    // An array to push all of the vertices that we're adding here on the top rim
+    // This will be passed into a separate function to add the flat top surface
     vector<ofIndexType> topRimVertices;
     
     // Find the tallest point and use that as the z value for the upper circle rim
@@ -344,6 +337,7 @@ void ofApp::addCentralCylinder() {
 //--------------------------------------------------------------
 void ofApp::addMeshCap(vector<ofIndexType> vertices, float height) {
     
+    // This will add the triangles for the top and bottom surfaces of the mesh
     // Add the centre vertex of the top surface
     // Create a new point and add it to the mesh
     ofVec3f p(0, 0, height);
@@ -444,6 +438,9 @@ void ofApp::addSideToMesh() {
 //--------------------------------------------------------------
 void ofApp::updateNormals(ofIndexType i1, ofIndexType i2, ofIndexType i3, ofIndexType i4, bool invert) {
     
+    // Four the vertices of two adjacent triangles, get the cross product and reset the corresponding normal for each vertex
+    // This is probably too reliant on the order that the vertex indices are passed into the function
+    
     int direction = 1;
     
     if(invert) {
@@ -522,14 +519,13 @@ void ofApp::keyReleased(int key){
             
             // Call the functions to finish off the mesh.
             // The order matters, adding the central cylinder and edges adds more vertices to the mesh,
-            // connecting the last to the first lines relys on the order of the vertices as the were put into the mesh
+            // connecting the last to the first lines is reliant on the order of the vertices as the were put into the mesh
             connectLastSpectrumToFirst();
             addCentralCylinder();
             addSideToMesh();
             
-            
-//            mesh.save("meshdump_" + ofToString(ofGetUnixTime()) + ".ply");
-//            cout << "Manual mesh dump : meshdump_" + ofToString(ofGetUnixTime()) + ".ply" << endl;
+            mesh.save("meshdump_" + ofToString(ofGetUnixTime()) + ".ply");
+            cout << "Manual mesh dump : meshdump_" + ofToString(ofGetUnixTime()) + ".ply" << endl;
             break;
         }
             
