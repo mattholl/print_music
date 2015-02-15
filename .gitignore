@@ -111,6 +111,6 @@ screenshots
 bin/data/*.wav
 bin/data/*.ply
 bin/data/*.png
-blender-files/*
+other-files/*
 tone-generator/node_modules
 tone-generator/tones
