@@ -7,7 +7,7 @@ The settings.xml file needs to be copied to a settings.local.xml file. The path 
 
 A .ply file of the mesh can be dumped by pressing the 'm' key whilst the app is running. Images can be dumped with 's'.
 
-
+[thingsbymatt.com/projects/print-music/](thingsbymatt.com/projects/print-music/)
 
 ## Images
 [mttholl.tumblr.com](http://mttholl.tumblr.com/)
