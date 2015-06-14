@@ -110,7 +110,7 @@ meshdumps
 screenshots
 bin/data/*.wav
 bin/data/*.ply
-bin/data/*.png
+bin/data/**/*.png
 other-files/*
 tone-generator/node_modules
 tone-generator/tones
