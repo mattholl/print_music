@@ -53,7 +53,10 @@ class ofApp : public ofBaseApp{
     //--------------------------------------------------------------
     // Mesh setup and rendering
     ofEasyCam cam;
-    ofMesh mesh;
+//    ofMesh mesh;
+    
+    ofVboMesh mesh;
+    
     ofLight lightAbove;
     ofLight lightBelow;
     
