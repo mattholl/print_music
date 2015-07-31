@@ -1,13 +1,14 @@
 # print_music
-A small openFrameworks app which generates a mesh from the FFT of an audio file.
 
-The FFT spectrum values are calculated periodically and a new line of vertices is stitched onto the previous. The current spectrum line turns about a central point resulting in the disc shape whilst making sound and time into a tangible volume.
+An openFrameworks app which generates a mesh from the FFT of an audio file.
 
-The settings.xml file needs to be copied to a settings.local.xml file. The path to a music file can then be specified along with the length of the file in seconds.
+The FFT spectrum values are calculated periodically and a new line of vertices is stitched onto the previous line. The current spectrum line turns about a central point resulting in the disc shape whilst making sound and time into a tangible volume.
 
-A .ply file of the mesh can be dumped by pressing the 'm' key whilst the app is running. Images can be dumped with 's'.
+To run this app clone it first and build with openFrameworks. Then copy the ````settings.xml```` file to a file called ````local.settings.xml```` and enter the path to a source audio file. The length of the track in seconds should also be entered in the specified field.
 
-[thingsbymatt.com/projects/print-music/](http://thingsbymatt.com/projects/print-music/)
+Pressing the 'm' key whilst the visualisation is rendering will join up the mesh into a watertight whole and write a ````.ply```` file into the data directory.
+
+[www.thingsbymatt.com/projects/print-music/](http://www.thingsbymatt.com/projects/print-music/)
 
 ## Images
 [mttholl.tumblr.com](http://mttholl.tumblr.com/)
@@ -26,8 +27,3 @@ A .ply file of the mesh can be dumped by pressing the 'm' key whilst the app is 
 
 ![Image from tumblr](https://36.media.tumblr.com/ced1b13c84188f2fa47e0d6c014bb853/tumblr_nion4bSsLF1rxgdjxo2_1280.png)
 
-## Todo
-- [x] Add images to this readme
-- [ ] Add camera controls to readme
-- [x] Make the mesh watertight ready for printing
-- [ ] Better instructions + web viewer with a simple static server
