@@ -9,9 +9,9 @@
     </b>
 </file-index>
 <settings>
-    <decay-rate>0.9</decay-rate>
+    <decay-rate>0.75</decay-rate>
     <frequency-scale>100</frequency-scale>
-    <radial-position-start>10</radial-position-start>
+    <radial-position-start>100</radial-position-start>
     <radial-position-end>1000</radial-position-end>
     <line-resolution>1</line-resolution>
     <base-surface-depth>-20</base-surface-depth>
